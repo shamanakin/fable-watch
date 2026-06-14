@@ -1,0 +1,39 @@
+name: fable-watch
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'   # every 15 minutes (UTC)
+  workflow_dispatch: {}        # adds a manual "Run workflow" button
+
+permissions:
+  contents: write              # lets the bot commit status.json
+
+concurrency:
+  group: fable-watch
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Probe Anthropic for Fable + update status
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # ── EDIT THIS to your own hard-to-guess push topic (any string). ──
+          # Install the "ntfy" app on your phone, then subscribe to this EXACT topic.
+          NTFY_TOPIC: "fable-watch-7h2x9-mh"
+        run: python3 scripts/check.py
+
+      - name: Commit status if it changed
+        run: |
+          if ! git diff --quiet -- status.json; then
+            git config user.name "fable-watch-bot"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add status.json
+            git commit -m "sensor sweep: $(date -u +%FT%TZ)"
+            git push
+          else
+            echo "no change to commit"
+          fi

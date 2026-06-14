@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FABLE PUBLIC ACCESS BACK?</title>
+<meta name="description" content="A live monument to the 5 days the public had Claude Fable 5. Auto-watching the Anthropic grid for its return." />
+<meta property="og:title" content="FABLE PUBLIC ACCESS BACK?" />
+<meta property="og:description" content="Fable 5 was pulled. This terminal watches the grid for its return — automatically, 24/7." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#06060c; --bg2:#0b0b18;
+    --cyan:#2de2ff; --magenta:#ff2d75; --violet:#a974ff;
+    --red:#ff2d4a; --green:#39ff14; --amber:#ffb000;
+    --ink:#d6e6ff; --dim:#5b6b8c;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:
+      radial-gradient(120% 80% at 50% -10%, rgba(169,116,255,.18), transparent 60%),
+      radial-gradient(100% 60% at 50% 120%, rgba(45,226,255,.12), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    font-family:'Share Tech Mono',monospace;
+    overflow-x:hidden; min-height:100%;
+    display:flex; flex-direction:column; align-items:center;
+    position:relative;
+  }
+  /* moving grid floor */
+  .grid{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;perspective:340px}
+  .grid::before{
+    content:"";position:absolute;left:-50%;right:-50%;bottom:-10%;height:160%;
+    background-image:linear-gradient(rgba(45,226,255,.22) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(255,45,117,.18) 1px,transparent 1px);
+    background-size:46px 46px;
+    transform:rotateX(72deg);
+    transform-origin:bottom center;
+    animation:flow 7s linear infinite;
+    mask-image:linear-gradient(to top,#000 0%,transparent 75%);
+    -webkit-mask-image:linear-gradient(to top,#000 0%,transparent 75%);
+  }
+  @keyframes flow{from{background-position:0 0}to{background-position:0 46px}}
+  /* scanlines + flicker */
+  .scan{position:fixed;inset:0;z-index:50;pointer-events:none;
+    background:repeating-linear-gradient(transparent 0 2px,rgba(0,0,0,.35) 2px 3px);
+    mix-blend-mode:multiply;opacity:.5;animation:flick 6s steps(60) infinite}
+  @keyframes flick{0%,97%{opacity:.5}98%{opacity:.32}99%{opacity:.6}100%{opacity:.45}}
+  .vig{position:fixed;inset:0;z-index:40;pointer-events:none;
+    box-shadow:inset 0 0 220px 40px rgba(0,0,0,.9)}
+
+  main{position:relative;z-index:10;width:100%;max-width:920px;padding:42px 22px 70px;
+    display:flex;flex-direction:column;align-items:center;gap:26px;text-align:center}
+
+  .kicker{font-size:13px;letter-spacing:.42em;color:var(--cyan);text-transform:uppercase;
+    text-shadow:0 0 12px var(--cyan);opacity:.9}
+
+  .title{font-family:'Orbitron',sans-serif;font-weight:900;line-height:.92;
+    font-size:clamp(44px,12vw,118px);letter-spacing:.02em;position:relative;
+    color:#fff;text-shadow:0 0 18px rgba(255,255,255,.25)}
+  .title .q{display:block;font-size:clamp(16px,3.4vw,30px);letter-spacing:.3em;
+    color:var(--magenta);text-shadow:0 0 14px var(--magenta);margin-top:14px}
+  /* glitch */
+  .glitch{position:relative}
+  .glitch::before,.glitch::after{content:attr(data-t);position:absolute;inset:0;clip-path:inset(0 0 0 0)}
+  .glitch::before{color:var(--magenta);transform:translate(-2px,0);animation:g1 2.6s infinite linear alternate-reverse;mix-blend-mode:screen}
+  .glitch::after{color:var(--cyan);transform:translate(2px,0);animation:g2 3.4s infinite linear alternate-reverse;mix-blend-mode:screen}
+  @keyframes g1{0%{clip-path:inset(8% 0 86% 0)}20%{clip-path:inset(40% 0 40% 0)}40%{clip-path:inset(72% 0 8% 0)}60%{clip-path:inset(20% 0 64% 0)}80%{clip-path:inset(54% 0 28% 0)}100%{clip-path:inset(80% 0 4% 0)}}
+  @keyframes g2{0%{clip-path:inset(82% 0 6% 0)}25%{clip-path:inset(18% 0 70% 0)}50%{clip-path:inset(48% 0 34% 0)}75%{clip-path:inset(8% 0 80% 0)}100%{clip-path:inset(62% 0 22% 0)}}
+
+  /* status console */
+  .console{width:100%;max-width:680px;border:1px solid rgba(45,226,255,.35);
+    background:linear-gradient(180deg,rgba(11,11,24,.92),rgba(6,6,12,.92));
+    border-radius:10px;box-shadow:0 0 40px rgba(45,226,255,.12),inset 0 0 60px rgba(0,0,0,.6);
+    overflow:hidden}
+  .bar{display:flex;align-items:center;gap:8px;padding:9px 14px;
+    background:rgba(45,226,255,.07);border-bottom:1px solid rgba(45,226,255,.22);
+    font-size:12px;letter-spacing:.18em;color:var(--dim)}
+  .dot{width:11px;height:11px;border-radius:50%}
+  .dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+  .bar .path{margin-left:auto;color:var(--cyan);opacity:.7}
+
+  .readout{padding:34px 20px 30px}
+  .label{font-size:12px;letter-spacing:.4em;color:var(--dim);text-transform:uppercase}
+  .verdict{font-family:'Orbitron',sans-serif;font-weight:900;
+    font-size:clamp(40px,11vw,96px);letter-spacing:.04em;margin:6px 0 2px;line-height:1}
+  .offline{color:var(--red);text-shadow:0 0 26px rgba(255,45,74,.7);animation:pulse 1.7s ease-in-out infinite}
+  .online{color:var(--green);text-shadow:0 0 30px rgba(57,255,20,.8)}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+  .sub{font-size:14px;color:var(--ink);opacity:.8;margin-top:8px;min-height:18px}
+
+  .counter{margin-top:18px}
+  .counter .nums{font-family:'Orbitron',sans-serif;font-weight:700;
+    font-size:clamp(20px,5vw,34px);color:var(--amber);text-shadow:0 0 16px rgba(255,176,0,.55);letter-spacing:.06em}
+  .counter .cap{font-size:11px;letter-spacing:.34em;color:var(--dim);text-transform:uppercase;margin-top:4px}
+
+  .sensor{display:flex;align-items:center;justify-content:center;gap:9px;
+    font-size:12px;color:var(--cyan);letter-spacing:.12em;margin-top:22px;flex-wrap:wrap}
+  .blip{width:9px;height:9px;border-radius:50%;background:var(--green);
+    box-shadow:0 0 10px var(--green);animation:pulse 1.4s infinite}
+  .sensor .t{color:var(--dim)}
+
+  .actions{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+  .btn{font-family:'Orbitron',sans-serif;font-weight:700;font-size:14px;letter-spacing:.12em;
+    text-decoration:none;padding:14px 22px;border-radius:8px;position:relative;
+    color:#06060c;background:linear-gradient(90deg,var(--cyan),var(--violet));
+    box-shadow:0 0 22px rgba(45,226,255,.5);transition:transform .12s,box-shadow .12s}
+  .btn:hover{transform:translateY(-2px);box-shadow:0 0 34px rgba(169,116,255,.7)}
+  .btn.ghost{background:transparent;color:var(--cyan);border:1px solid var(--cyan);box-shadow:0 0 16px rgba(45,226,255,.25) inset}
+  .btn.jack{display:none;background:linear-gradient(90deg,var(--green),#9dff5a);box-shadow:0 0 28px rgba(57,255,20,.6)}
+
+  .termlog{width:100%;max-width:680px;text-align:left;font-size:12.5px;line-height:1.75;
+    color:var(--dim);border-left:2px solid rgba(169,116,255,.4);padding:4px 0 4px 16px;opacity:0;
+    transition:opacity .6s}
+  .termlog .ok{color:var(--green)}.termlog .warn{color:var(--amber)}.termlog .c{color:var(--cyan)}.termlog .m{color:var(--magenta)}
+
+  footer{position:relative;z-index:10;color:var(--dim);font-size:11px;letter-spacing:.14em;
+    padding:0 20px 36px;text-align:center;line-height:1.8}
+  footer a{color:var(--magenta);text-decoration:none}
+
+  /* boot overlay */
+  #boot{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;
+    align-items:center;justify-content:center;padding:24px;font-size:14px;line-height:1.9}
+  #boot pre{color:var(--green);text-shadow:0 0 8px rgba(57,255,20,.5);white-space:pre-wrap;max-width:640px}
+  .cursor{display:inline-block;width:9px;height:16px;background:var(--green);vertical-align:-2px;animation:blink 1s steps(2) infinite}
+  @keyframes blink{50%{opacity:0}}
+  body.online .grid::before{background-image:linear-gradient(rgba(57,255,20,.22) 1px,transparent 1px),linear-gradient(90deg,rgba(57,255,20,.16) 1px,transparent 1px)}
+  canvas#fx{position:fixed;inset:0;z-index:60;pointer-events:none}
+</style>
+</head>
+<body>
+  <div class="grid"></div>
+  <div class="scan"></div>
+  <div class="vig"></div>
+  <canvas id="fx"></canvas>
+
+  <div id="boot"><pre id="boottext"></pre></div>
+
+  <main>
+    <div class="kicker">RobCo&nbsp;//&nbsp;Grid Surveillance Node</div>
+    <h1 class="title">
+      <span class="glitch" data-t="FABLE&nbsp;5">FABLE&nbsp;5</span>
+      <span class="q">— public access back? —</span>
+    </h1>
+
+    <section class="console" aria-live="polite">
+      <div class="bar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span>anthropic.grid // model-registry watch</span>
+        <span class="path">/v1/models</span>
+      </div>
+      <div class="readout">
+        <div class="label">Public availability</div>
+        <div class="verdict offline" id="verdict">NO</div>
+        <div class="sub" id="sub">Pulled by federal export-control order. Access denied worldwide.</div>
+
+        <div class="counter">
+          <div class="nums" id="counter">--</div>
+          <div class="cap" id="counter-cap">since the lights went out</div>
+        </div>
+
+        <div class="sensor">
+          <span class="blip"></span><span>AUTO-SCANNING EVERY 15 MIN</span>
+          <span class="t">· last sweep: <span id="last">—</span></span>
+        </div>
+      </div>
+    </section>
+
+    <div class="actions">
+      <a class="btn" href="https://x.com/AnthropicAI" target="_blank" rel="noopener">⟶ FOLLOW @AnthropicAI</a>
+      <a class="btn ghost" href="https://www.anthropic.com/news/claude-fable-5-mythos-5" target="_blank" rel="noopener">THE STORY</a>
+      <a class="btn jack" id="jack" href="https://console.anthropic.com" target="_blank" rel="noopener">⚡ JACK IN ⟶</a>
+    </div>
+
+    <pre class="termlog" id="termlog"></pre>
+  </main>
+
+  <footer>
+    A monument to the 5 days the public had it · Jun 9–12, 2026<br/>
+    sensor reads the live Anthropic model registry · <a href="https://x.com/AnthropicAI" target="_blank" rel="noopener">@AnthropicAI</a> for the signal
+  </footer>
+
+<script>
+const SINCE_FALLBACK = "2026-06-12T00:00:00Z";
+let state = { available:false, since:SINCE_FALLBACK, last_checked:null, model_id:null };
+
+/* ---------- boot sequence ---------- */
+const bootLines = [
+  "RobCo Grid Surveillance Node v5.0",
+  "> establishing uplink to anthropic.grid ........ OK",
+  "> loading model-registry watch ................. OK",
+  "> target: CLAUDE-FABLE-5",
+  "> status of target: ", // filled after fetch
+];
+function runBoot(verdictText){
+  const el = document.getElementById("boottext");
+  const lines = bootLines.slice();
+  lines[4] = "> status of target: " + verdictText;
+  let i=0, out="";
+  (function step(){
+    if(i<lines.length){
+      out += lines[i] + "\n"; i++;
+      el.innerHTML = out + '<span class="cursor"></span>';
+      setTimeout(step, 230 + Math.random()*180);
+    } else {
+      el.innerHTML = out + '<span class="cursor"></span>';
+      setTimeout(()=>{
+        const b=document.getElementById("boot");
+        b.style.transition="opacity .5s"; b.style.opacity="0";
+        setTimeout(()=>b.remove(),520);
+        revealLog();
+      }, 520);
+    }
+  })();
+}
+
+/* ---------- terminal flavor log ---------- */
+function revealLog(){
+  const log = document.getElementById("termlog");
+  const live = state.available;
+  const lines = live ? [
+    '<span class="ok">[OK]</span> registry sweep complete',
+    '<span class="ok">[HIT]</span> <span class="c">'+(state.model_id||'claude-fable-5')+'</span> present in /v1/models',
+    '<span class="ok">[!!]</span> <span class="m">ACCESS RESTORED</span> — the grid is open',
+  ] : [
+    '<span class="warn">[··]</span> registry sweep complete',
+    '<span class="warn">[NEG]</span> no <span class="c">fable</span> id in /v1/models',
+    '<span class="warn">[··]</span> export-control lock still engaged',
+    '<span class="c">[i]</span> standing watch. you will be paged the instant it returns.',
+  ];
+  log.style.opacity="1"; log.innerHTML="";
+  let i=0;(function t(){ if(i<lines.length){ log.innerHTML += "> "+lines[i]+"\n"; i++; setTimeout(t,360);} })();
+}
+
+/* ---------- the "since" counter ---------- */
+function tickCounter(){
+  const since = new Date(state.since || SINCE_FALLBACK).getTime();
+  const d = Math.max(0, Date.now()-since);
+  const days = Math.floor(d/86400000);
+  const h = String(Math.floor(d/3600000)%24).padStart(2,"0");
+  const m = String(Math.floor(d/60000)%60).padStart(2,"0");
+  const s = String(Math.floor(d/1000)%60).padStart(2,"0");
+  const el = document.getElementById("counter");
+  if(el) el.textContent = days+"d : "+h+":"+m+":"+s;
+}
+
+/* ---------- render state ---------- */
+function fmt(iso){ if(!iso) return "—"; try{const dt=new Date(iso);
+  return dt.toISOString().replace("T"," ").slice(0,16)+" UTC";}catch(e){return "—"} }
+
+function render(){
+  const v = document.getElementById("verdict");
+  const sub = document.getElementById("sub");
+  const cap = document.getElementById("counter-cap");
+  const jack = document.getElementById("jack");
+  document.getElementById("last").textContent = fmt(state.last_checked);
+  if(state.available){
+    document.body.classList.add("online");
+    v.textContent="YES"; v.className="verdict online";
+    sub.innerHTML='<b style="color:var(--green)">ACCESS RESTORED.</b> Fable 5 is back on the public grid.';
+    cap.textContent="the lights were out for";
+    jack.style.display="inline-block";
+    document.title="✅ FABLE IS BACK";
+    celebrate();
+  } else {
+    document.body.classList.remove("online");
+    v.textContent="NO"; v.className="verdict offline";
+    sub.textContent="Pulled by federal export-control order. Access denied worldwide.";
+    cap.textContent="since the lights went out";
+    jack.style.display="none";
+    document.title="FABLE PUBLIC ACCESS BACK?";
+  }
+}
+
+/* ---------- confetti / spark burst on ONLINE ---------- */
+let fired=false;
+function celebrate(){
+  if(fired) return; fired=true;
+  const c=document.getElementById("fx"), x=c.getContext("2d");
+  c.width=innerWidth;c.height=innerHeight;
+  const cols=["#39ff14","#2de2ff","#ff2d75","#a974ff","#ffb000"];
+  let p=Array.from({length:240},()=>({x:innerWidth/2,y:innerHeight*0.32,
+    vx:(Math.random()-.5)*14,vy:Math.random()*-12-3,g:.34,
+    s:Math.random()*4+2,c:cols[(Math.random()*cols.length)|0],life:1}));
+  (function loop(){
+    x.clearRect(0,0,c.width,c.height); let alive=false;
+    for(const o of p){ o.vy+=o.g;o.x+=o.vx;o.y+=o.vy;o.life-=.006;
+      if(o.life>0&&o.y<c.height+20){alive=true;x.globalAlpha=Math.max(0,o.life);
+        x.fillStyle=o.c;x.fillRect(o.x,o.y,o.s,o.s);} }
+    if(alive) requestAnimationFrame(loop); else x.clearRect(0,0,c.width,c.height);
+  })();
+}
+
+/* ---------- fetch status (cache-busted) + re-poll while open ---------- */
+async function pull(first){
+  try{
+    const r = await fetch("status.json?t="+Date.now(),{cache:"no-store"});
+    const j = await r.json();
+    const was = state.available;
+    state = Object.assign(state, j);
+    if(first){ runBoot(state.available ? "ONLINE — ACCESS RESTORED" : "OFFLINE — locked"); }
+    if(!first && !was && state.available){ fired=false; } // allow celebration on live flip
+    render();
+  }catch(e){ if(first) runBoot("OFFLINE — locked"); render(); }
+}
+
+pull(true);
+render();
+tickCounter();
+setInterval(tickCounter,1000);
+setInterval(()=>pull(false), 60000); // a viewer with the page open sees a live flip within ~1 min
+addEventListener("resize",()=>{const c=document.getElementById("fx");c.width=innerWidth;c.height=innerHeight;});
+</script>
+</body>
+</html>
